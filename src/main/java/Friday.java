@@ -16,13 +16,22 @@ public class Friday {
                 "____________________________________________________________\n");
 
         Scanner scanner = new Scanner(System.in);
-        String words = "";
+        String[] words = new String[100];
+        int idx  = 0;
 
         while (true) {
-            words = scanner.nextLine();
-            if(!"bye".equals(words)) {
+            String word = scanner.nextLine();
+
+            if(!"bye".equals(word)) {
+                if ("list".equals(word)) {
+                    for (int i = 0; i < idx; i++) {
+                        System.out.println((i + 1) + ". " + words[i] + "\n");
+                    }
+                }
+                words[idx] = word;
+                idx++;
                 System.out.println("____________________________________________________________\n" +
-                                    words + "\n" +
+                                    word + "\n" +
                                     "____________________________________________________________\n");
             }else{
                 break;
