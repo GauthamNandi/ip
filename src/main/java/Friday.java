@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Friday {
     public static void main(String[] args) {
         String banner = " _____     _     _             \n" +
@@ -11,8 +13,26 @@ public class Friday {
                 banner + "\n" +
                 "Hello! I'm Friday!\n" +
                 "What can I do for you?\n" +
-                "____________________________________________________________\n" +
-                "Bye. Hope to see you again soon!\n" +
                 "____________________________________________________________\n");
+
+        Scanner scanner = new Scanner(System.in);
+        String words = "";
+
+        while (true) {
+            words = scanner.nextLine();
+            if(!"bye".equals(words)) {
+                System.out.println("____________________________________________________________\n" +
+                                    words + "\n" +
+                                    "____________________________________________________________\n");
+            }else{
+                break;
+            }
+        }
+
+        System.out.println("____________________________________________________________\n" +
+                            "Bye. Hope to see you again soon!\n" +
+                            "____________________________________________________________\n");
+
+
     }
 }
