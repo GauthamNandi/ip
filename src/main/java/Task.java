@@ -11,6 +11,10 @@ class Task {
         return isDone ? "X" : " ";
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+
     public void changeStatus(String option) {
         if ("mark".equals(option)) {
             this.isDone = true;
