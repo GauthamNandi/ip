@@ -1,3 +1,5 @@
+package friday;
+
 class Task {
     protected String description;
     protected boolean isDone;

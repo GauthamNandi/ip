@@ -1,3 +1,5 @@
+package friday;
+
 import java.util.Scanner;
 
 public class Friday {
@@ -108,13 +110,20 @@ public class Friday {
                 continue;
             }
 
-            tasks[idx] = createTask(word);
-            idx++;
+            try {
+                tasks[idx] = createTask(word);
+                idx++;
 
-            System.out.println(
-                    LINE_BREAK +
-                            word + "\n" +
-                            LINE_BREAK);
+                System.out.println(
+                        LINE_BREAK +
+                                word + "\n" +
+                                LINE_BREAK);
+            } catch (FridayException e) {
+                System.out.println(
+                        LINE_BREAK +
+                                e.getMessage() + "\n" +
+                                LINE_BREAK);
+            }
         }
 
         System.out.println(
@@ -125,37 +134,75 @@ public class Friday {
         scanner.close();
     }
 
-    public static Task createTask(String input) {
+    public static Task createTask(String input) throws FridayException {
 
-        if (input.startsWith("todo ")) {
+        if (input.equals("todo") || input.startsWith("todo ")) {
 
-            String description = input.substring(5);
+            String description = input.length() > 4 ? input.substring(5).trim() : "";
+
+            if (description.isEmpty()) {
+                throw new FridayException("OOPS!!! The description of a todo cannot be empty.");
+            }
+
             return new Todo(description);
 
-        } else if (input.startsWith("deadline ")) {
+        } else if (input.equals("deadline") || input.startsWith("deadline ")) {
 
-            String details = input.substring(9);
+            String details = input.length() > 8 ? input.substring(9).trim() : "";
+
+            if (!details.contains(" /by ")) {
+                throw new FridayException(
+                        "OOPS!!! A deadline needs a description and a '/by' date/time, "
+                                + "e.g. deadline return book /by Sunday");
+            }
+
             String[] parts = details.split(" /by ", 2);
+            String description = parts[0].trim();
+            String by = parts[1].trim();
 
-            return new Deadline(parts[0], parts[1]);
+            if (description.isEmpty()) {
+                throw new FridayException("OOPS!!! The description of a deadline cannot be empty.");
+            }
 
-        } else if (input.startsWith("event ")) {
+            if (by.isEmpty()) {
+                throw new FridayException("OOPS!!! Please state a date/time after '/by'.");
+            }
 
-            String details = input.substring(6);
+            return new Deadline(description, by);
+
+        } else if (input.equals("event") || input.startsWith("event ")) {
+
+            String details = input.length() > 5 ? input.substring(6).trim() : "";
+
+            if (!details.contains(" /from ")) {
+                throw new FridayException(
+                        "OOPS!!! An event needs a description, a '/from' and a '/to' timing, "
+                                + "e.g. event meeting /from Mon 2pm /to Mon 4pm");
+            }
 
             String[] parts = details.split(" /from ", 2);
+            String description = parts[0].trim();
 
-            String description = parts[0];
+            if (description.isEmpty()) {
+                throw new FridayException("OOPS!!! The description of an event cannot be empty.");
+            }
+
+            if (!parts[1].contains(" /to ")) {
+                throw new FridayException("OOPS!!! Please state both a '/from' and a '/to' timing.");
+            }
 
             String[] times = parts[1].split(" /to ", 2);
+            String from = times[0].trim();
+            String to = times[1].trim();
 
-            String from = times[0];
-            String to = times[1];
+            if (from.isEmpty() || to.isEmpty()) {
+                throw new FridayException("OOPS!!! Please state both a '/from' and a '/to' timing.");
+            }
 
             return new Event(description, from, to);
         }
 
-        return new Todo(input);
+        throw new FridayException("OOPS!!! I'm sorry, but I don't know what that means :-(");
     }
 
 }

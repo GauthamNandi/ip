@@ -1,3 +1,5 @@
+package friday;
+
 public class Event extends Task {
 
     protected String from;

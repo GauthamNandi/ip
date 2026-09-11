@@ -1,3 +1,5 @@
+package friday;
+
 public class Todo extends Task {
     protected boolean isDone;
     public Todo(String description) {
