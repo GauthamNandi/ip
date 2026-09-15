@@ -24,4 +24,13 @@ class Task {
             this.isDone = false;
         }
     }
+
+    /**
+     * Returns this task encoded as a single line for storage on disk,
+     * e.g. "T | 1 | read book". Subclasses override this to add their
+     * own fields (such as a deadline date or event timing).
+     */
+    public String toFileFormat() {
+        return "? | " + (isDone ? "1" : "0") + " | " + description;
+    }
 }

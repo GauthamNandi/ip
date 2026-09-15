@@ -18,4 +18,9 @@ public class Event extends Task {
                 + " (from: " + from
                 + " to: " + to + ")";
     }
+
+    @Override
+    public String toFileFormat() {
+        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
+    }
 }
