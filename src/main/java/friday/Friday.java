@@ -1,10 +1,14 @@
 package friday;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Friday {
 
     public static final String LINE_BREAK = "____________________________________________________________\n";
+    public static final String SAVE_FILE_PATH = "./data/friday.txt";
 
     public static void main(String[] args) {
 
@@ -24,11 +28,17 @@ public class Friday {
         Scanner scanner = new Scanner(System.in);
 
         Task[] tasks = new Task[100];
-        int idx = 0;
+        int idx = loadTasks(tasks);
 
         while (true) {
 
-            String word = scanner.nextLine();
+            // Handle end-of-input (e.g. piped input, Ctrl+D) gracefully
+            // instead of crashing with NoSuchElementException.
+            if (!scanner.hasNextLine()) {
+                break;
+            }
+
+            String word = scanner.nextLine().trim();
 
             // Exit
             if ("bye".equals(word)) {
@@ -75,6 +85,7 @@ public class Friday {
 
                     // Change task status
                     tasks[num - 1].changeStatus(command[0]);
+                    saveTasks(tasks, idx);
 
                     String status;
 
@@ -113,6 +124,7 @@ public class Friday {
             try {
                 tasks[idx] = createTask(word);
                 idx++;
+                saveTasks(tasks, idx);
 
                 System.out.println(
                         LINE_BREAK +
@@ -134,6 +146,107 @@ public class Friday {
         scanner.close();
     }
 
+    /**
+     * Writes the current task list to disk at {@link #SAVE_FILE_PATH},
+     * one task per line, overwriting whatever was there before. Creates
+     * the parent "data" folder if it doesn't already exist.
+     */
+    public static void saveTasks(Task[] tasks, int idx) {
+        File file = new File(SAVE_FILE_PATH);
+        File parentDir = file.getParentFile();
+
+        if (parentDir != null) {
+            parentDir.mkdirs();
+        }
+
+        try (FileWriter writer = new FileWriter(file)) {
+            for (int i = 0; i < idx; i++) {
+                writer.write(tasks[i].toFileFormat() + System.lineSeparator());
+            }
+        } catch (IOException e) {
+            System.out.println(
+                    LINE_BREAK +
+                            "Warning: could not save tasks to disk (" + e.getMessage() + ").\n" +
+                            LINE_BREAK);
+        }
+    }
+
+    /**
+     * Loads tasks from disk at {@link #SAVE_FILE_PATH} into {@code tasks},
+     * returning how many were loaded. If the file doesn't exist yet (e.g.
+     * first run), returns 0 without error. Lines that can't be parsed are
+     * skipped.
+     */
+    public static int loadTasks(Task[] tasks) {
+        File file = new File(SAVE_FILE_PATH);
+        int idx = 0;
+
+        if (!file.exists()) {
+            return idx;
+        }
+
+        try (Scanner fileScanner = new Scanner(file)) {
+            while (fileScanner.hasNextLine() && idx < tasks.length) {
+                String line = fileScanner.nextLine();
+
+                try {
+                    tasks[idx] = parseTaskFromFile(line);
+                    idx++;
+                } catch (RuntimeException e) {
+                    System.out.println(
+                            LINE_BREAK +
+                                    "Warning: skipping corrupted line in save file: " + line + "\n" +
+                                    LINE_BREAK);
+                }
+            }
+
+            if (fileScanner.hasNextLine()) {
+                System.out.println(
+                        LINE_BREAK +
+                                "Warning: the save file has more tasks than can be loaded "
+                                + "(max " + tasks.length + "); the rest were skipped.\n" +
+                                LINE_BREAK);
+            }
+        } catch (IOException e) {
+            System.out.println(
+                    LINE_BREAK +
+                            "Warning: could not load tasks from disk (" + e.getMessage() + ").\n" +
+                            LINE_BREAK);
+        }
+
+        return idx;
+    }
+
+    /**
+     * Parses one line of the save file (e.g. "D | 0 | return book | Sunday")
+     * back into a Task. Throws an unchecked exception if the line is
+     * malformed, which the caller treats as a corrupted line to skip.
+     */
+    private static Task parseTaskFromFile(String line) {
+        String[] parts = line.split(" \\| ");
+        String type = parts[0];
+        boolean isDone = "1".equals(parts[1]);
+        String description = parts[2];
+
+        Task task;
+
+        if ("T".equals(type)) {
+            task = new Todo(description);
+        } else if ("D".equals(type)) {
+            task = new Deadline(description, parts[3]);
+        } else if ("E".equals(type)) {
+            task = new Event(description, parts[3], parts[4]);
+        } else {
+            throw new IllegalArgumentException("Unknown task type: " + type);
+        }
+
+        if (isDone) {
+            task.changeStatus("mark");
+        }
+
+        return task;
+    }
+
     public static Task createTask(String input) throws FridayException {
 
         if (input.equals("todo") || input.startsWith("todo ")) {
@@ -143,6 +256,8 @@ public class Friday {
             if (description.isEmpty()) {
                 throw new FridayException("OOPS!!! The description of a todo cannot be empty.");
             }
+
+            validateNoPipeCharacter(description);
 
             return new Todo(description);
 
@@ -167,6 +282,9 @@ public class Friday {
             if (by.isEmpty()) {
                 throw new FridayException("OOPS!!! Please state a date/time after '/by'.");
             }
+
+            validateNoPipeCharacter(description);
+            validateNoPipeCharacter(by);
 
             return new Deadline(description, by);
 
@@ -199,10 +317,25 @@ public class Friday {
                 throw new FridayException("OOPS!!! Please state both a '/from' and a '/to' timing.");
             }
 
+            validateNoPipeCharacter(description);
+            validateNoPipeCharacter(from);
+            validateNoPipeCharacter(to);
+
             return new Event(description, from, to);
         }
 
         throw new FridayException("OOPS!!! I'm sorry, but I don't know what that means :-(");
+    }
+
+    /**
+     * Rejects task text containing '|', since that character is the field
+     * delimiter used by {@link Task#toFileFormat}/{@link #parseTaskFromFile} -
+     * allowing it would silently corrupt the save file on the next reload.
+     */
+    private static void validateNoPipeCharacter(String value) throws FridayException {
+        if (value.contains("|")) {
+            throw new FridayException("OOPS!!! Task details cannot contain the '|' character.");
+        }
     }
 
 }
