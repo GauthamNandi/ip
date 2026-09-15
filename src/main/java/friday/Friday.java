@@ -1,5 +1,6 @@
 package friday;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Friday {
@@ -23,8 +24,7 @@ public class Friday {
 
         Scanner scanner = new Scanner(System.in);
 
-        Task[] tasks = new Task[100];
-        int idx = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         while (true) {
 
@@ -37,8 +37,8 @@ public class Friday {
 
             // List all tasks
             if ("list".equals(word)) {
-                for (int i = 0; i < idx; i++) {
-                    System.out.println((i + 1) + "." + tasks[i] + "\n");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println((i + 1) + "." + tasks.get(i) + "\n");
                 }
 
                 System.out.println(LINE_BREAK);
@@ -65,7 +65,7 @@ public class Friday {
                     int num = Integer.parseInt(command[1]);
 
                     // Check that task number is valid
-                    if (num < 1 || num > idx) {
+                    if (num < 1 || num > tasks.size()) {
                         System.out.println(
                                 LINE_BREAK +
                                         "Invalid task number.\n" +
@@ -74,7 +74,8 @@ public class Friday {
                     }
 
                     // Change task status
-                    tasks[num - 1].changeStatus(command[0]);
+                    Task task = tasks.get(num - 1);
+                    task.changeStatus(command[0]);
 
                     String status;
 
@@ -87,8 +88,51 @@ public class Friday {
                     System.out.println(
                             LINE_BREAK +
                                     "The task below has been " + status + "\n" +
-                                    "[" + tasks[num - 1].getStatusIcon() + "] " +
-                                    tasks[num - 1].description + "\n" +
+                                    "[" + task.getStatusIcon() + "] " +
+                                    task.description + "\n" +
+                                    LINE_BREAK);
+
+                } catch (NumberFormatException e) {
+                    System.out.println(
+                            LINE_BREAK +
+                                    "Please enter a valid task number.\n" +
+                                    LINE_BREAK);
+                }
+
+                continue;
+            }
+
+            // Delete command
+            if ("delete".equals(command[0])) {
+
+                // Check that a task number was provided
+                if (command.length < 2) {
+                    System.out.println(
+                            LINE_BREAK +
+                                    "Please specify a task number.\n" +
+                                    LINE_BREAK);
+                    continue;
+                }
+
+                try {
+                    int num = Integer.parseInt(command[1]);
+
+                    // Check that task number is valid
+                    if (num < 1 || num > tasks.size()) {
+                        System.out.println(
+                                LINE_BREAK +
+                                        "Invalid task number.\n" +
+                                        LINE_BREAK);
+                        continue;
+                    }
+
+                    Task removed = tasks.remove(num - 1);
+
+                    System.out.println(
+                            LINE_BREAK +
+                                    "Noted. I've removed this task:\n" +
+                                    removed + "\n" +
+                                    "Now you have " + tasks.size() + " tasks in the list.\n" +
                                     LINE_BREAK);
 
                 } catch (NumberFormatException e) {
@@ -102,17 +146,8 @@ public class Friday {
             }
 
             // Add a new task
-            if (idx >= tasks.length) {
-                System.out.println(
-                        LINE_BREAK +
-                                "You have reached the maximum number of tasks.\n" +
-                                LINE_BREAK);
-                continue;
-            }
-
             try {
-                tasks[idx] = createTask(word);
-                idx++;
+                tasks.add(createTask(word));
 
                 System.out.println(
                         LINE_BREAK +
