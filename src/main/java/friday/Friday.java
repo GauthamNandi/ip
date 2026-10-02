@@ -1,5 +1,7 @@
 package friday;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 public class Friday {
@@ -135,24 +137,32 @@ public class Friday {
 
             if (!details.contains(" /by ")) {
                 throw new FridayException(
-                        "OOPS!!! A deadline needs a description and a '/by' date/time, "
-                                + "e.g. deadline return book /by Sunday");
+                        "OOPS!!! A deadline needs a description and a '/by' date, "
+                                + "e.g. deadline return book /by 2019-12-02");
             }
 
             String[] parts = details.split(" /by ", 2);
             String description = parts[0].trim();
-            String by = parts[1].trim();
+            String byText = parts[1].trim();
 
             if (description.isEmpty()) {
                 throw new FridayException("OOPS!!! The description of a deadline cannot be empty.");
             }
 
-            if (by.isEmpty()) {
-                throw new FridayException("OOPS!!! Please state a date/time after '/by'.");
+            if (byText.isEmpty()) {
+                throw new FridayException("OOPS!!! Please state a date after '/by'.");
             }
 
             validateNoPipeCharacter(description);
-            validateNoPipeCharacter(by);
+
+            LocalDate by;
+            try {
+                by = LocalDate.parse(byText);
+            } catch (DateTimeParseException e) {
+                throw new FridayException(
+                        "OOPS!!! Please give the date after '/by' in yyyy-MM-dd format, "
+                                + "e.g. deadline return book /by 2019-12-02");
+            }
 
             return new Deadline(description, by);
 

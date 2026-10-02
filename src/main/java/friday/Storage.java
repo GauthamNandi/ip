@@ -3,6 +3,7 @@ package friday;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -72,9 +73,10 @@ public class Storage {
     }
 
     /**
-     * Parses one line of the save file (e.g. "D | 0 | return book | Sunday")
+     * Parses one line of the save file (e.g. "D | 0 | return book | 2019-12-02")
      * back into a Task. Throws an unchecked exception if the line is
-     * malformed, which the caller treats as a corrupted line to skip.
+     * malformed (including a deadline date that isn't valid ISO
+     * yyyy-MM-dd), which the caller treats as a corrupted line to skip.
      */
     private Task parseTaskFromFile(String line) {
         String[] parts = line.split(" \\| ");
@@ -87,7 +89,7 @@ public class Storage {
         if ("T".equals(type)) {
             task = new Todo(description);
         } else if ("D".equals(type)) {
-            task = new Deadline(description, parts[3]);
+            task = new Deadline(description, LocalDate.parse(parts[3]));
         } else if ("E".equals(type)) {
             task = new Event(description, parts[3], parts[4]);
         } else {
