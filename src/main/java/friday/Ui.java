@@ -68,6 +68,19 @@ public class Ui {
         System.out.println(LINE_BREAK);
     }
 
+    public void showMatchingTasks(ArrayList<Task> matches) {
+        if (matches.isEmpty()) {
+            showMessage("No matching tasks found in your list.");
+            return;
+        }
+
+        System.out.println(LINE_BREAK + "Here are the matching tasks in your list:");
+        for (int i = 0; i < matches.size(); i++) {
+            System.out.println((i + 1) + "." + matches.get(i) + "\n");
+        }
+        System.out.println(LINE_BREAK);
+    }
+
     /**
      * Echoes the raw command text back as confirmation that a task was
      * added. (Friday doesn't yet print a friendlier "Got it..." summary

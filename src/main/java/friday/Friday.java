@@ -102,6 +102,21 @@ public class Friday {
                 continue;
             }
 
+            // Find command
+            if ("find".equals(command[0])) {
+
+                String keyword = word.length() > 4 ? word.substring(5).trim() : "";
+
+                if (keyword.isEmpty()) {
+                    ui.showMessage("Please specify a keyword to search for.");
+                    continue;
+                }
+
+                ui.showMatchingTasks(findTasks(tasks, keyword));
+
+                continue;
+            }
+
             // Add a new task
             try {
                 tasks.add(createTask(word));
@@ -115,6 +130,22 @@ public class Friday {
 
         ui.showGoodbye();
         ui.close();
+    }
+
+    /**
+     * Returns the tasks whose description contains {@code keyword} as a
+     * case-sensitive substring, in their original list order.
+     */
+    private static ArrayList<Task> findTasks(ArrayList<Task> tasks, String keyword) {
+        ArrayList<Task> matches = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task.getDescription().contains(keyword)) {
+                matches.add(task);
+            }
+        }
+
+        return matches;
     }
 
     public static Task createTask(String input) throws FridayException {
