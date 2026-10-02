@@ -1,42 +1,27 @@
 package friday;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Friday {
 
-    public static final String LINE_BREAK = "____________________________________________________________\n";
     public static final String SAVE_FILE_PATH = "./data/friday.txt";
 
     public static void main(String[] args) {
 
-        String banner = " _____     _     _             \n" +
-                "|  ___| __(_) __| | __ _ _   _ \n" +
-                "| |_ | '__| |/ _` |/ _` | | | |\n" +
-                "|  _|| |  | | (_| | (_| | |_| |\n" +
-                "|_|  |_|  |_|\\__,_|\\__,_|\\__, |\n" +
-                "                         |___/ ";
-
-        System.out.println(LINE_BREAK +
-                banner + "\n" +
-                "Hello! I'm Friday!\n" +
-                "What can I do for you?\n" +
-                LINE_BREAK);
-
-        Scanner scanner = new Scanner(System.in);
+        Ui ui = new Ui();
+        ui.showWelcome();
 
         Storage storage = new Storage(SAVE_FILE_PATH);
-        ArrayList<Task> tasks = storage.load();
+        ArrayList<Task> tasks = storage.load(ui);
 
         while (true) {
 
             // Handle end-of-input (e.g. piped input, Ctrl+D) gracefully
             // instead of crashing with NoSuchElementException.
-            if (!scanner.hasNextLine()) {
+            String word = ui.readCommand();
+            if (word == null) {
                 break;
             }
-
-            String word = scanner.nextLine().trim();
 
             // Exit
             if ("bye".equals(word)) {
@@ -45,11 +30,7 @@ public class Friday {
 
             // List all tasks
             if ("list".equals(word)) {
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println((i + 1) + "." + tasks.get(i) + "\n");
-                }
-
-                System.out.println(LINE_BREAK);
+                ui.showTaskList(tasks);
                 continue;
             }
 
@@ -62,10 +43,7 @@ public class Friday {
 
                 // Check that a task number was provided
                 if (command.length < 2) {
-                    System.out.println(
-                            LINE_BREAK +
-                                    "Please specify a task number.\n" +
-                                    LINE_BREAK);
+                    ui.showMessage("Please specify a task number.");
                     continue;
                 }
 
@@ -74,38 +52,19 @@ public class Friday {
 
                     // Check that task number is valid
                     if (num < 1 || num > tasks.size()) {
-                        System.out.println(
-                                LINE_BREAK +
-                                        "Invalid task number.\n" +
-                                        LINE_BREAK);
+                        ui.showMessage("Invalid task number.");
                         continue;
                     }
 
                     // Change task status
                     Task task = tasks.get(num - 1);
                     task.changeStatus(command[0]);
-                    storage.save(tasks);
+                    storage.save(tasks, ui);
 
-                    String status;
-
-                    if ("mark".equals(command[0])) {
-                        status = "marked as done";
-                    } else {
-                        status = "marked as undone";
-                    }
-
-                    System.out.println(
-                            LINE_BREAK +
-                                    "The task below has been " + status + "\n" +
-                                    "[" + task.getStatusIcon() + "] " +
-                                    task.description + "\n" +
-                                    LINE_BREAK);
+                    ui.showMarkResult(task, "mark".equals(command[0]));
 
                 } catch (NumberFormatException e) {
-                    System.out.println(
-                            LINE_BREAK +
-                                    "Please enter a valid task number.\n" +
-                                    LINE_BREAK);
+                    ui.showMessage("Please enter a valid task number.");
                 }
 
                 continue;
@@ -116,10 +75,7 @@ public class Friday {
 
                 // Check that a task number was provided
                 if (command.length < 2) {
-                    System.out.println(
-                            LINE_BREAK +
-                                    "Please specify a task number.\n" +
-                                    LINE_BREAK);
+                    ui.showMessage("Please specify a task number.");
                     continue;
                 }
 
@@ -128,28 +84,17 @@ public class Friday {
 
                     // Check that task number is valid
                     if (num < 1 || num > tasks.size()) {
-                        System.out.println(
-                                LINE_BREAK +
-                                        "Invalid task number.\n" +
-                                        LINE_BREAK);
+                        ui.showMessage("Invalid task number.");
                         continue;
                     }
 
                     Task removed = tasks.remove(num - 1);
-                    storage.save(tasks);
+                    storage.save(tasks, ui);
 
-                    System.out.println(
-                            LINE_BREAK +
-                                    "Noted. I've removed this task:\n" +
-                                    removed + "\n" +
-                                    "Now you have " + tasks.size() + " tasks in the list.\n" +
-                                    LINE_BREAK);
+                    ui.showDeleteResult(removed, tasks.size());
 
                 } catch (NumberFormatException e) {
-                    System.out.println(
-                            LINE_BREAK +
-                                    "Please enter a valid task number.\n" +
-                                    LINE_BREAK);
+                    ui.showMessage("Please enter a valid task number.");
                 }
 
                 continue;
@@ -158,26 +103,16 @@ public class Friday {
             // Add a new task
             try {
                 tasks.add(createTask(word));
-                storage.save(tasks);
+                storage.save(tasks, ui);
 
-                System.out.println(
-                        LINE_BREAK +
-                                word + "\n" +
-                                LINE_BREAK);
+                ui.showTaskAdded(word);
             } catch (FridayException e) {
-                System.out.println(
-                        LINE_BREAK +
-                                e.getMessage() + "\n" +
-                                LINE_BREAK);
+                ui.showMessage(e.getMessage());
             }
         }
 
-        System.out.println(
-                LINE_BREAK +
-                        "Bye. Hope to see you again soon!\n" +
-                        LINE_BREAK);
-
-        scanner.close();
+        ui.showGoodbye();
+        ui.close();
     }
 
     public static Task createTask(String input) throws FridayException {

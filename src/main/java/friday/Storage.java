@@ -21,9 +21,9 @@ public class Storage {
     /**
      * Loads tasks from the save file into a new list. If the file doesn't
      * exist yet (e.g. first run), returns an empty list. Lines that can't
-     * be parsed are skipped with a warning printed to the console.
+     * be parsed are skipped, with a warning reported via {@code ui}.
      */
-    public ArrayList<Task> load() {
+    public ArrayList<Task> load(Ui ui) {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = new File(filePath);
 
@@ -38,17 +38,11 @@ public class Storage {
                 try {
                     tasks.add(parseTaskFromFile(line));
                 } catch (RuntimeException e) {
-                    System.out.println(
-                            Friday.LINE_BREAK +
-                                    "Warning: skipping corrupted line in save file: " + line + "\n" +
-                                    Friday.LINE_BREAK);
+                    ui.showMessage("Warning: skipping corrupted line in save file: " + line);
                 }
             }
         } catch (IOException e) {
-            System.out.println(
-                    Friday.LINE_BREAK +
-                            "Warning: could not load tasks from disk (" + e.getMessage() + ").\n" +
-                            Friday.LINE_BREAK);
+            ui.showMessage("Warning: could not load tasks from disk (" + e.getMessage() + ").");
         }
 
         return tasks;
@@ -57,9 +51,10 @@ public class Storage {
     /**
      * Writes the given tasks to the save file, one task per line,
      * overwriting whatever was there before. Creates the parent folder
-     * (e.g. "data") if it doesn't already exist.
+     * (e.g. "data") if it doesn't already exist. Reports any failure
+     * via {@code ui}.
      */
-    public void save(ArrayList<Task> tasks) {
+    public void save(ArrayList<Task> tasks, Ui ui) {
         File file = new File(filePath);
         File parentDir = file.getParentFile();
 
@@ -72,10 +67,7 @@ public class Storage {
                 writer.write(task.toFileFormat() + System.lineSeparator());
             }
         } catch (IOException e) {
-            System.out.println(
-                    Friday.LINE_BREAK +
-                            "Warning: could not save tasks to disk (" + e.getMessage() + ").\n" +
-                            Friday.LINE_BREAK);
+            ui.showMessage("Warning: could not save tasks to disk (" + e.getMessage() + ").");
         }
     }
 
