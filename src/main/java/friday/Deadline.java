@@ -3,17 +3,26 @@ package friday;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/** A task that must be done by a given date. */
 public class Deadline extends Task {
 
+    /** Human-friendly format used when showing the date to the user, e.g. "Dec 02 2019". */
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("MMM dd yyyy");
 
     protected LocalDate by;
 
+    /**
+     * Creates a deadline that is initially not done.
+     *
+     * @param description what needs to be done
+     * @param by          the date it is due
+     */
     public Deadline(String description, LocalDate by) {
         super(description);
         this.by = by;
     }
 
+    /** Returns the display form, e.g. {@code [D][ ] return book (by: Dec 02 2019)}. */
     @Override
     public String toString() {
         return "[D][" + getStatusIcon() + "] "

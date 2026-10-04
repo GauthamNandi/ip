@@ -15,6 +15,11 @@ public class Storage {
 
     private final String filePath;
 
+    /**
+     * Creates a storage bound to the given file.
+     *
+     * @param filePath path of the save file (it need not exist yet)
+     */
     public Storage(String filePath) {
         this.filePath = filePath;
     }

@@ -14,6 +14,7 @@ public class Ui {
 
     private final Scanner scanner;
 
+    /** Creates a Ui that reads from standard input. */
     public Ui() {
         this.scanner = new Scanner(System.in);
     }
@@ -30,6 +31,7 @@ public class Ui {
         return scanner.nextLine().trim();
     }
 
+    /** Prints the Friday logo and greeting shown at start-up. */
     public void showWelcome() {
         String banner = " _____     _     _             \n" +
                 "|  ___| __(_) __| | __ _ _   _ \n" +
@@ -45,6 +47,7 @@ public class Ui {
                 LINE_BREAK);
     }
 
+    /** Prints the farewell shown when Friday exits. */
     public void showGoodbye() {
         showMessage("Bye. Hope to see you again soon!");
     }
@@ -61,6 +64,7 @@ public class Ui {
                         LINE_BREAK);
     }
 
+    /** Prints every task in {@code tasks} as a numbered list, starting from 1. */
     public void showTaskList(ArrayList<Task> tasks) {
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + "." + tasks.get(i) + "\n");
@@ -68,6 +72,11 @@ public class Ui {
         System.out.println(LINE_BREAK);
     }
 
+    /**
+     * Prints the results of a "find" command, numbered from 1 within the
+     * results (not by position in the full list), or a "no matches"
+     * message if {@code matches} is empty.
+     */
     public void showMatchingTasks(ArrayList<Task> matches) {
         if (matches.isEmpty()) {
             showMessage("No matching tasks found in your list.");
@@ -93,6 +102,12 @@ public class Ui {
                         LINE_BREAK);
     }
 
+    /**
+     * Confirms that a task was marked or unmarked.
+     *
+     * @param task   the task that was changed
+     * @param isMark {@code true} if it was marked as done, {@code false} if unmarked
+     */
     public void showMarkResult(Task task, boolean isMark) {
         String status = isMark ? "marked as done" : "marked as undone";
 
@@ -104,6 +119,12 @@ public class Ui {
                         LINE_BREAK);
     }
 
+    /**
+     * Confirms that a task was deleted.
+     *
+     * @param removed        the task that was removed
+     * @param remainingCount how many tasks are left in the list
+     */
     public void showDeleteResult(Task removed, int remainingCount) {
         System.out.println(
                 LINE_BREAK +
@@ -113,6 +134,7 @@ public class Ui {
                         LINE_BREAK);
     }
 
+    /** Releases the underlying input scanner; call once when Friday exits. */
     public void close() {
         scanner.close();
     }

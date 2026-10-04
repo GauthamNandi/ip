@@ -4,10 +4,21 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
+/**
+ * Entry point of the Friday task-list chatbot. Reads commands from the
+ * user in a loop, updates the task list accordingly and saves it to disk
+ * after every change.
+ */
 public class Friday {
 
+    /** Location of the save file, relative to where the program is run. */
     public static final String SAVE_FILE_PATH = "./data/friday.txt";
 
+    /**
+     * Runs Friday until the user types "bye" or input ends.
+     * Supported commands: list, mark, unmark, delete, find, todo,
+     * deadline and event.
+     */
     public static void main(String[] args) {
 
         Ui ui = new Ui();
@@ -148,6 +159,16 @@ public class Friday {
         return matches;
     }
 
+    /**
+     * Parses a raw "todo", "deadline" or "event" command into the matching
+     * task, e.g. {@code deadline return book /by 2019-12-02}.
+     *
+     * @param input the full command line typed by the user
+     * @return the newly created task
+     * @throws FridayException if the command word is unknown, a required
+     *                         part is missing or empty, a deadline date is
+     *                         not in yyyy-MM-dd format, or the text contains '|'
+     */
     public static Task createTask(String input) throws FridayException {
 
         if (input.equals("todo") || input.startsWith("todo ")) {
